@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.example.homesecurity.tak.TakOutboxService;
 
 import java.time.Instant;
 
@@ -17,6 +18,9 @@ class SecurityEventServiceTest {
 
     @Mock
     private SecurityEventRepository repository;
+
+    @Mock
+    private TakOutboxService takOutboxService;
 
     @InjectMocks
     private SecurityEventService service;

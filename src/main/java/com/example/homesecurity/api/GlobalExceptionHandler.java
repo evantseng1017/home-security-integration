@@ -1,6 +1,7 @@
 package com.example.homesecurity.api;
 
 import com.example.homesecurity.event.DuplicateEventException;
+import com.example.homesecurity.event.EventNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateEventException.class)
     ResponseEntity<ApiError> handleDuplicate(DuplicateEventException ex, HttpServletRequest request) {
         return response(HttpStatus.CONFLICT, ex.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(EventNotFoundException.class)
+    ResponseEntity<ApiError> handleNotFound(EventNotFoundException ex, HttpServletRequest request) {
+        return response(HttpStatus.NOT_FOUND, ex.getMessage(), request, Map.of());
     }
 
     private ResponseEntity<ApiError> response(HttpStatus status, String message,

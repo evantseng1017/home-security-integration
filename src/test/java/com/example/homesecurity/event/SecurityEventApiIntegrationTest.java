@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 //test
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -122,5 +123,25 @@ class SecurityEventApiIntegrationTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
                 .andExpect(jsonPath("$.message", containsString("evt-1001")));
+    }
+
+    @Test
+    void returnsCursorOnTargetXmlForStoredEvent() throws Exception {
+        mockMvc.perform(post("/api/events").contentType(MediaType.APPLICATION_JSON).content(VALID_EVENT))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/events/evt-1001/cot"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_XML))
+                .andExpect(content().string(containsString("<event version=\"2.0\"")))
+                .andExpect(content().string(containsString("eventType=\"MOTION_DETECTED\"")))
+                .andExpect(content().string(containsString("lat=\"39.7392\"")));
+    }
+
+    @Test
+    void returnsNotFoundForMissingCotEvent() throws Exception {
+        mockMvc.perform(get("/api/events/missing/cot"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Security event not found: missing"));
     }
 }
