@@ -4,27 +4,28 @@ A Java 21 / Spring Boot service that validates, stores, and lists security event
 
 ## Hardware integration roadmap
 
-The current backend and Python simulator are the software foundation. Planned
-hardware work will evolve the project through these capabilities:
+The Java backend remains the server-side foundation, and the repository now
+also contains an initial C++ ESP32 firmware implementation. The firmware adds:
 
-- ESP32 firmware written in C++
+- ESP32 firmware written in C++ with PlatformIO
 - PIR motion events transmitted over Wi-Fi
-- USB/UART communication between the ESP32 and a computer
+- USB/UART commands and newline-framed event output
 - A custom Bluetooth Low Energy (BLE) GATT service exposing security events
-- Offline event storage with automatic retry after reconnection
-- Hardware-in-the-loop tests and documented debugging procedures
+- An in-memory offline queue with automatic retry after reconnection
+- A native C++ test for the event JSON contract
+- Planned hardware-in-the-loop tests and persistent offline storage
 - Optional Cursor-on-Target output for TAK/ATAK integration
 
 See [Hardware Integration Roadmap](docs/HARDWARE_INTEGRATION_ROADMAP.md) for the
-implementation order, deliverables, and completion criteria. Planned features
-are not represented as complete until their corresponding acceptance criteria
-have been verified with physical hardware.
+implementation order, deliverables, and completion criteria. Firmware behavior
+has not yet been verified with physical hardware.
 
 ## Prerequisites
 
 - Java 21 or newer
 - Maven 3.9+
 - Python 3.10+ (only for the simulator)
+- PlatformIO (for C++ firmware builds, tests, and flashing)
 
 ## Run the service
 
@@ -103,4 +104,20 @@ src/main/java/.../api       HTTP error response handling
 src/main/java/.../event     controller, service, validation model, entity, repository
 src/test/java/.../event     unit and HTTP integration tests
 simulator/                  fake ESP32 event producer
+firmware/esp32-security-node C++ ESP32 firmware, native tests, and device docs
+docs/                       hardware roadmap
 ```
+
+## ESP32 C++ firmware
+
+The firmware is a separate PlatformIO project so the Java backend continues to
+use Maven unchanged:
+
+```bash
+cd firmware/esp32-security-node
+pio test -e native
+pio run -e esp32dev
+```
+
+Before flashing real hardware, identify the exact board and follow the firmware
+[configuration and safety instructions](firmware/esp32-security-node/README.md).

@@ -13,9 +13,13 @@ Already implemented:
 - Request validation and clear HTTP errors
 - Unit and HTTP integration tests
 - Python ESP32 event simulator
+- Compilable C++ ESP32 firmware for PIR, Wi-Fi, UART, BLE GATT, and RAM retry
+  queue behavior
+- Shared C++ event encoder and PlatformIO test image
 
-The milestones below are planned work and should only be marked complete after
-verification on the physical ESP32.
+The firmware portions of early milestones are implemented, but no hardware
+milestone is complete until its acceptance criteria are verified on the
+physical ESP32.
 
 ## Milestone 1: ESP32 firmware foundation
 
