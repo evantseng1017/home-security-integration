@@ -14,7 +14,7 @@ also contains an initial C++ ESP32 firmware implementation. The firmware adds:
 - An in-memory offline queue with automatic retry after reconnection
 - A native C++ test for the event JSON contract
 - Planned hardware-in-the-loop tests and persistent offline storage
-- Optional Cursor-on-Target output for TAK/ATAK integration
+- Cursor-on-Target generation, TAK TCP/TLS delivery, and a database-backed retry outbox
 
 See [Hardware Integration Roadmap](docs/HARDWARE_INTEGRATION_ROADMAP.md) for the
 implementation order, deliverables, and completion criteria. Firmware behavior
@@ -79,13 +79,52 @@ in the editor.
 
 Errors use a consistent JSON response. Validation errors also include a `fieldErrors` object. Invalid input returns `400 Bad Request`; duplicate event IDs return `409 Conflict`.
 
+### Generate Cursor-on-Target XML
+
+After creating an event, render its TAK-compatible CoT representation:
+
+```bash
+curl http://localhost:8080/api/events/evt-1001/cot \
+  --output src/test/resources/output/evt-1001-cot.xml
+```
+
+Missing event IDs return `404 Not Found`. CoT output includes identity,
+coordinates, timestamps, device details, armed state, and a prototype event-type
+mapping.
+
+## Local TAK integration test
+
+Start the included plain-TCP mock receiver from the repository root:
+
+```bash
+python simulator/mock_tak_receiver.py
+```
+
+In a second terminal, enable local TAK delivery:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.arguments="--tak.enabled=true --tak.host=127.0.0.1 --tak.port=8087 --tak.tls=false"
+```
+
+Submit an event with the POST command above. The mock prints the CoT and appends
+it to `src/test/resources/output/mock-tak-events.xml.log`. Plain TCP is only for
+local development.
+
+For a real TAK Server, enable TLS and configure the PKCS#12 client and trust
+stores with `tak.key-store`, `tak.key-store-password`, `tak.trust-store`, and
+`tak.trust-store-password`. Never commit certificates or passwords. Failed
+messages remain in `tak_outbox` and retry with exponential backoff. Because H2
+is currently in memory, the queue survives network outages but not an application
+restart; use a file-backed or production database for restart durability.
+
 ## Run tests
 
 ```bash
 mvn test
 ```
 
-The suite contains a JUnit unit test for service behavior and Spring Boot integration tests that exercise the HTTP API against H2.
+The suite contains service and CoT unit tests plus Spring Boot API, outbox retry,
+and mock TCP receiver integration tests.
 
 ## ESP32 simulator
 
@@ -104,6 +143,7 @@ src/main/java/.../api       HTTP error response handling
 src/main/java/.../event     controller, service, validation model, entity, repository
 src/test/java/.../event     unit and HTTP integration tests
 simulator/                  fake ESP32 event producer
+src/main/java/.../tak       CoT conversion, TAK transport, and retry outbox
 firmware/esp32-security-node C++ ESP32 firmware, native tests, and device docs
 docs/                       hardware roadmap
 ```

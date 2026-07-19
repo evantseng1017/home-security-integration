@@ -16,6 +16,8 @@ Already implemented:
 - Compilable C++ ESP32 firmware for PIR, Wi-Fi, UART, BLE GATT, and RAM retry
   queue behavior
 - Shared C++ event encoder and PlatformIO test image
+- Backend CoT conversion, configurable TCP/TLS delivery, and retry outbox
+- Local mock TAK receiver and automated transport tests
 
 The firmware portions of early milestones are implemented, but no hardware
 milestone is complete until its acceptance criteria are verified on the
@@ -148,7 +150,7 @@ Acceptance criteria:
 - Tests can be repeated from documented setup instructions
 - Results distinguish firmware, wiring, network, and backend failures
 
-## Optional milestone 7: TAK/ATAK integration
+## Optional milestone 7: TAK/ATAK integration (software foundation complete)
 
 Add an adapter that converts selected security events into Cursor-on-Target
 (CoT) messages for a TAK-compatible environment.
@@ -165,6 +167,11 @@ Acceptance criteria:
 - Generated messages conform to the chosen CoT schema and timestamp rules
 - A test client or authorized TAK environment displays the expected event
 - Backend event ingestion remains independent from TAK availability
+
+The software-only deliverables and local receiver tests are complete. Remaining
+work requires a TAK Server and ATAK client: provision certificates, connect with
+mutual TLS, confirm the prototype marker types render as intended, and capture
+end-to-end test evidence in ATAK.
 
 ## Engineering documentation to maintain
 
