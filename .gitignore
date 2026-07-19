@@ -1,0 +1,9 @@
+target/
+work/
+.idea/
+.vscode/
+*.iml
+*.log
+__pycache__/
+.python-version
+/outputs
