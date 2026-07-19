@@ -2,6 +2,24 @@
 
 A Java 21 / Spring Boot service that validates, stores, and lists security events sent by devices such as an ESP32. Events are stored in an in-memory H2 database for this initial version.
 
+## Hardware integration roadmap
+
+The current backend and Python simulator are the software foundation. Planned
+hardware work will evolve the project through these capabilities:
+
+- ESP32 firmware written in C++
+- PIR motion events transmitted over Wi-Fi
+- USB/UART communication between the ESP32 and a computer
+- A custom Bluetooth Low Energy (BLE) GATT service exposing security events
+- Offline event storage with automatic retry after reconnection
+- Hardware-in-the-loop tests and documented debugging procedures
+- Optional Cursor-on-Target output for TAK/ATAK integration
+
+See [Hardware Integration Roadmap](docs/HARDWARE_INTEGRATION_ROADMAP.md) for the
+implementation order, deliverables, and completion criteria. Planned features
+are not represented as complete until their corresponding acceptance criteria
+have been verified with physical hardware.
+
 ## Prerequisites
 
 - Java 21 or newer
@@ -27,6 +45,7 @@ Because H2 is configured in memory, events are reset whenever the application st
 ```bash
 curl -X POST http://localhost:8080/api/events \
   -H "Content-Type: application/json" \
+  --output src/test/resources/output/post-event-response.json \
   -d '{
     "eventId": "evt-1001",
     "deviceId": "esp32-front-door",
@@ -48,8 +67,14 @@ Latitude must be between -90 and 90 and longitude between -180 and 180. All fiel
 `GET /api/events` returns all stored events, newest timestamp first.
 
 ```bash
-curl http://localhost:8080/api/events
+curl http://localhost:8080/api/events \
+  --output src/test/resources/output/get-events-response.json
 ```
+
+All documented `curl` commands save their response bodies in
+`src/test/resources/output`. Inspect the saved files from the terminal with
+`cat src/test/resources/output/get-events-response.json`, or open them directly
+in the editor.
 
 Errors use a consistent JSON response. Validation errors also include a `fieldErrors` object. Invalid input returns `400 Bad Request`; duplicate event IDs return `409 Conflict`.
 

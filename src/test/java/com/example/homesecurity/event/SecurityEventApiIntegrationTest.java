@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class SecurityEventApiIntegrationTest {
 
+        //replace real coordinates with house coordinates
     private static final String VALID_EVENT = """
             {
               "eventId": "evt-1001",
