@@ -150,6 +150,30 @@ void setArmed(bool newState) {
     enqueueEvent(createEvent(armed ? "SYSTEM_ARMED" : "SYSTEM_DISARMED"));
 }
 
+void printWifiDiagnostics() {
+    const int connectionStatus = static_cast<int>(WiFi.status());
+    WiFi.disconnect(false, false);
+    delay(250);
+    const int networkCount = WiFi.scanNetworks(false, true);
+    bool configuredNetworkVisible = false;
+    int configuredNetworkRssi = 0;
+    int configuredNetworkEncryption = -1;
+    for (int index = 0; index < networkCount; ++index) {
+        if (WiFi.SSID(index) == SECURITY_WIFI_SSID) {
+            configuredNetworkVisible = true;
+            configuredNetworkRssi = WiFi.RSSI(index);
+            configuredNetworkEncryption = static_cast<int>(WiFi.encryptionType(index));
+            break;
+        }
+    }
+    Serial.printf("WIFI_DIAG status=%d networks=%d configuredNetworkVisible=%s rssi=%d encryption=%d\n",
+                  connectionStatus, networkCount,
+                  configuredNetworkVisible ? "true" : "false",
+                  configuredNetworkRssi, configuredNetworkEncryption);
+    WiFi.scanDelete();
+    WiFi.begin(SECURITY_WIFI_SSID, SECURITY_WIFI_PASSWORD);
+}
+
 class ArmedStateCallbacks final : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* characteristic) override {
         const std::string value = characteristic->getValue();
@@ -197,6 +221,8 @@ void processSerialCommand() {
     } else if (command == "DISARM") {
         setArmed(false);
         Serial.println("ACK DISARM");
+    } else if (command == "WIFI_DIAG") {
+        printWifiDiagnostics();
     } else if (!command.isEmpty()) {
         Serial.printf("NACK unknown_command=%s\n", command.c_str());
     }
